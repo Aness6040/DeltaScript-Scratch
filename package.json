@@ -1,7 +1,7 @@
 {
-  "name": "scratch-ext",
+  "name": "deltascript",
   "version": "1.0.0",
-  "description": "Scaffolding for Javascript/Typescript Scratch extensions",
+  "description": "A Text Programming Language For Scratch",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

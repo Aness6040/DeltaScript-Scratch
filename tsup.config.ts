@@ -8,11 +8,10 @@ export default defineConfig({
   outDir: 'dist',
   banner: {
     // Replace it with your extension's metadata
-    js: `// Name: FurryR's example Extension
-// ID: newExtension
-// Description: Scaffolding for Advanced Scratch extensions.
-// By: You
-// Original: Me
+    js: `// Name: DeltaScript
+// ID: deltascript
+// Description: A Text Programming Language For Scratch
+// By: Aness6040
 // License: MPL-2.0
 `
   },
