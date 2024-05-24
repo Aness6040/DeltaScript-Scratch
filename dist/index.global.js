@@ -11,7 +11,14 @@
   }
   function compile(code) {
     try {
-      return eval(compileCode(code));
+      const result = eval(compileCode(code));
+      if (typeof result === "object" && result !== null) {
+        return JSON.stringify(result);
+      }
+      if (typeof result === "string" && isJSON(result)) {
+        return result;
+      }
+      return result;
     } catch (err) {
       if (Scratch.extensions.isPenguinMod) {
         throw err;
@@ -21,6 +28,7 @@
   }
 
   // src/index.js
+  window.funcBroadast = {};
   (function(Scratch2) {
     if (Scratch2.extensions.unsandboxed === false) {
       throw new Error("Sandboxed mode is not supported");
@@ -100,6 +108,11 @@
                   defaultValue: "Math.round(Math.random()) === 1"
                 }
               }
+            },
+            "---",
+            {
+              blockType: Scratch2.BlockType.LABEL,
+              text: "\u{1F527} Functions"
             }
           ]
         };
@@ -114,10 +127,10 @@
         return compile(args.CODE);
       }
       runBoolean(args) {
-        if (!compile(args.CODE) === true) {
-          return false;
-        } else {
+        if (compile(args.CODE) === true) {
           return true;
+        } else {
+          return false;
         }
       }
     }

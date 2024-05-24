@@ -1,10 +1,13 @@
-import { compile, compileCode } from './compiler.js';
+import { compile, compileCode} from './compiler.js';
+
+window.funcBroadast = {};
 
 (function (Scratch) {
 
   if (Scratch.extensions.unsandboxed === false) {
     throw new Error('Sandboxed mode is not supported');
   }
+
 
   // Your extension's code
   class DeltaScriptExt {
@@ -83,6 +86,11 @@ import { compile, compileCode } from './compiler.js';
               }
             }
           },
+          '---',
+          {
+            blockType: Scratch.BlockType.LABEL,
+            text: "🔧 Functions"
+          },
         ]
       };
     }
@@ -97,10 +105,10 @@ import { compile, compileCode } from './compiler.js';
       return compile(args.CODE);
     }
     runBoolean(args) {
-      if (!compile(args.CODE) === true) {
-        return false;
-      } else {
+      if (compile(args.CODE) === true){
         return true;
+      } else {
+        return false;
       }
     }
   }
