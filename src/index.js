@@ -1,6 +1,8 @@
-import { compile } from './compiler.js';
+import { compile, compileCode } from './compiler.js';
 
 (function (Scratch) {
+
+  const { SandboxRunner } = Scratch;
 
   if (Scratch.extensions.unsandboxed === false) {
     throw new Error('Sandboxed mode is not supported');
@@ -24,8 +26,18 @@ import { compile } from './compiler.js';
         blockIconURI: this.blockIconURI,
         blocks: [
           {
+            blockType: Scratch.BlockType.BUTTON,
+            func: "docURL",
+            text: "📖 Read Documentation",
+          },
+          '---',
+          {
+            blockType: Scratch.BlockType.LABEL,
+            text: "📐 Evaluating"
+          },
+          {
             blockType: Scratch.BlockType.COMMAND,
-            opcode: "run",
+            opcode: "runStack",
             text: "run [CODE]",
             arguments: {
               CODE: {
@@ -35,24 +47,42 @@ import { compile } from './compiler.js';
             }
           },
           {
-            blockType: Scratch.BlockType.EVENT,
-            opcode: 'whenPressed',
-            text: 'when [KEY] key pressed',
-            isEdgeActivated: false,
-            shouldRestartExistingThreads: true,
+            blockType: Scratch.BlockType.REPORTER,
+            opcode: "runReporter",
+            text: "run [CODE]",
             arguments: {
-              KEY: {
+              CODE: {
                 type: Scratch.ArgumentType.STRING,
-                defaultValue: "sus",
+                defaultValue: "console.log(\"sus\")"
               }
             }
-          }
+          },
+          {
+            blockType: Scratch.BlockType.BOOLEAN,
+            func: "runReporter",
+            opcode: "runBoolean",
+            text: "run [CODE]",
+            arguments: {
+              CODE: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "console.log(\"sus\")"
+              }
+            }
+          },
         ]
       };
     }
-    run(args, util) {
-      eval(compile(args.CODE));
+
+    docURL(){
+      window.open('https://github.com/Aness6040/DeltaScript-Scratch/wiki', '_blank');
     }
+    runStack(args, util) {
+        compile(args.CODE);
+    }
+
+    runReporter(args, util) {
+      compile(args.CODE);
+  }
   }
 
   // The following snippet ensures compatibility with Turbowarp / Gandi IDE. If you want to write Turbowarp-only or Gandi-IDE code, please remove corresponding code
