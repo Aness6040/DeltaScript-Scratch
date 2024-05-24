@@ -2,12 +2,8 @@ import { compile, compileCode } from './compiler.js';
 
 (function (Scratch) {
 
-  const { SandboxRunner } = Scratch;
-
   if (Scratch.extensions.unsandboxed === false) {
     throw new Error('Sandboxed mode is not supported');
-  } else {
-    alert("Remember that DeltaScript Text extension is .dlts (JavaScript is .js)")    
   }
 
   // Your extension's code
@@ -30,6 +26,11 @@ import { compile, compileCode } from './compiler.js';
             func: "docURL",
             text: "📖 Read Documentation",
           },
+          {
+            blockType: Scratch.BlockType.BUTTON,
+            func: "aboutDLTS",
+            text: '📙 About',
+          },
           '---',
           {
             blockType: Scratch.BlockType.LABEL,
@@ -48,24 +49,25 @@ import { compile, compileCode } from './compiler.js';
           },
           {
             blockType: Scratch.BlockType.REPORTER,
+            func: "runStack",
             opcode: "runReporter",
             text: "run [CODE]",
             arguments: {
               CODE: {
                 type: Scratch.ArgumentType.STRING,
-                defaultValue: "console.log(\"sus\")"
+                defaultValue: "Math.random()"
               }
             }
           },
           {
             blockType: Scratch.BlockType.BOOLEAN,
-            func: "runReporter",
+            func: "runStack",
             opcode: "runBoolean",
             text: "run [CODE]",
             arguments: {
               CODE: {
                 type: Scratch.ArgumentType.STRING,
-                defaultValue: "console.log(\"sus\")"
+                defaultValue: "Math.round(Math.random()) === 1"
               }
             }
           },
@@ -76,13 +78,13 @@ import { compile, compileCode } from './compiler.js';
     docURL(){
       window.open('https://github.com/Aness6040/DeltaScript-Scratch/wiki', '_blank');
     }
+    aboutDLTS () {
+      alert("DeltaScript is a Text Programming Language for Scratch. It's a javascript addon that adds some engine mechanism. The FilE Extension is .dlts (JavaScript is .js)") 
+    }
     runStack(args, util) {
         compile(args.CODE);
     }
 
-    runReporter(args, util) {
-      compile(args.CODE);
-  }
   }
 
   // The following snippet ensures compatibility with Turbowarp / Gandi IDE. If you want to write Turbowarp-only or Gandi-IDE code, please remove corresponding code

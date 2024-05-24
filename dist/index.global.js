@@ -11,27 +11,19 @@
   }
   function compile(code) {
     try {
-      eval(compileCode(code));
+      return eval(compileCode(code));
     } catch (err) {
       if (Scratch.extensions.isPenguinMod) {
         throw err;
       }
       console.error(err);
     }
-    return new Promise((resolve) => {
-      SandboxRunner.execute(code).then((result) => {
-        return resolve(result.value);
-      });
-    });
   }
 
   // src/index.js
   (function(Scratch2) {
-    const { SandboxRunner: SandboxRunner2 } = Scratch2;
     if (Scratch2.extensions.unsandboxed === false) {
       throw new Error("Sandboxed mode is not supported");
-    } else {
-      alert("Remember that DeltaScript Text extension is .dlts (JavaScript is .js)");
     }
     class DeltaScriptExt {
       blockIconURI;
@@ -52,6 +44,11 @@
               func: "docURL",
               text: "\u{1F4D6} Read Documentation"
             },
+            {
+              blockType: Scratch2.BlockType.BUTTON,
+              func: "aboutDLTS",
+              text: "\u{1F4D9} About"
+            },
             "---",
             {
               blockType: Scratch2.BlockType.LABEL,
@@ -70,24 +67,25 @@
             },
             {
               blockType: Scratch2.BlockType.REPORTER,
+              func: "runStack",
               opcode: "runReporter",
               text: "run [CODE]",
               arguments: {
                 CODE: {
                   type: Scratch2.ArgumentType.STRING,
-                  defaultValue: 'console.log("sus")'
+                  defaultValue: "Math.random()"
                 }
               }
             },
             {
               blockType: Scratch2.BlockType.BOOLEAN,
-              func: "runReporter",
+              func: "runStack",
               opcode: "runBoolean",
               text: "run [CODE]",
               arguments: {
                 CODE: {
                   type: Scratch2.ArgumentType.STRING,
-                  defaultValue: 'console.log("sus")'
+                  defaultValue: "Math.round(Math.random()) === 1"
                 }
               }
             }
@@ -97,11 +95,11 @@
       docURL() {
         window.open("https://github.com/Aness6040/DeltaScript-Scratch/wiki", "_blank");
       }
-      runStack(args, util) {
-        compile(args.CODE);
+      aboutDLTS() {
+        alert("DeltaScript is a Text Programming Language for Scratch. It's a javascript addon that adds some engine mechanism. The FilE Extension is .dlts (JavaScript is .js)");
       }
-      runReporter(args, util) {
-        compile(args.CODE);
+      runStack(args, util) {
+        return compile(args.CODE);
       }
     }
     if (Scratch2.vm && Scratch2.vm.runtime) {
