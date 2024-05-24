@@ -1,6 +1,6 @@
 // Contenu de autreFichier.js
-function maFonction() {
-    console.log("Bonjour depuis autreFichier.js");
+function compile(code) {
+    return code;
 }
 
-export { maFonction }; // Exporter la fonction pour qu'elle soit accessible depuis d'autres fichiers
+export { compile }; // Exporter la fonction pour qu'elle soit accessible depuis d'autres fichiers

@@ -1,4 +1,4 @@
-import { maFonction } from './compiler.js';
+import { compile } from './compiler.js';
 
 (function (Scratch) {
 
@@ -33,13 +33,25 @@ import { maFonction } from './compiler.js';
                 defaultValue: "console.log(\"sus\")"
               }
             }
+          },
+          {
+            blockType: Scratch.BlockType.EVENT,
+            opcode: 'whenPressed',
+            text: 'when [KEY] key pressed',
+            isEdgeActivated: false,
+            shouldRestartExistingThreads: true,
+            arguments: {
+              KEY: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "sus",
+              }
+            }
           }
         ]
       };
     }
     run(args, util) {
-      eval(args.CODE);
-      maFonction();
+      eval(compile(args.CODE));
     }
   }
 
