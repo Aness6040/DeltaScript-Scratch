@@ -61,9 +61,21 @@ import { compile, compileCode } from './compiler.js';
           },
           {
             blockType: Scratch.BlockType.BOOLEAN,
-            func: "runStack",
             opcode: "runBoolean",
             text: "run [CODE]",
+            arguments: {
+              CODE: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "Math.round(Math.random()) === 1"
+              }
+            }
+          },
+          {
+            blockType: Scratch.BlockType.HAT,
+            func: "runBoolean",
+            opcode: "whenCodetrue",
+            text: "when [CODE] returns true",
+            isEdgeActivated: true,
             arguments: {
               CODE: {
                 type: Scratch.ArgumentType.STRING,
@@ -82,10 +94,21 @@ import { compile, compileCode } from './compiler.js';
       alert("DeltaScript is a Text Programming Language for Scratch. It's a javascript addon that adds some engine mechanism. The FilE Extension is .dlts (JavaScript is .js)") 
     }
     runStack(args, util) {
-        compile(args.CODE);
+      return compile(args.CODE);
     }
-
+    runBoolean(args) {
+      if (!compile(args.CODE) === true) {
+        return false;
+      } else {
+        return true;
+      }
+    }
   }
+
+  Scratch.vm.runtime.on('BEFORE_EXECUTE', () => {
+    // startHats is the same as before!
+    Scratch.vm.runtime.startHats('deltascript_whenCodetrue');
+  });
 
   // The following snippet ensures compatibility with Turbowarp / Gandi IDE. If you want to write Turbowarp-only or Gandi-IDE code, please remove corresponding code
   if (Scratch.vm && Scratch.vm.runtime) {

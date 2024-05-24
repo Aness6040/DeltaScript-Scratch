@@ -79,9 +79,21 @@
             },
             {
               blockType: Scratch2.BlockType.BOOLEAN,
-              func: "runStack",
               opcode: "runBoolean",
               text: "run [CODE]",
+              arguments: {
+                CODE: {
+                  type: Scratch2.ArgumentType.STRING,
+                  defaultValue: "Math.round(Math.random()) === 1"
+                }
+              }
+            },
+            {
+              blockType: Scratch2.BlockType.HAT,
+              func: "runBoolean",
+              opcode: "whenCodetrue",
+              text: "when [CODE] returns true",
+              isEdgeActivated: true,
               arguments: {
                 CODE: {
                   type: Scratch2.ArgumentType.STRING,
@@ -101,7 +113,17 @@
       runStack(args, util) {
         return compile(args.CODE);
       }
+      runBoolean(args) {
+        if (!compile(args.CODE) === true) {
+          return false;
+        } else {
+          return true;
+        }
+      }
     }
+    Scratch2.vm.runtime.on("BEFORE_EXECUTE", () => {
+      Scratch2.vm.runtime.startHats("deltascript_whenCodetrue");
+    });
     if (Scratch2.vm && Scratch2.vm.runtime) {
       Scratch2.extensions.register(new DeltaScriptExt(Scratch2.runtime));
     } else {
