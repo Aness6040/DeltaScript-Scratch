@@ -89,24 +89,8 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
       const runtime = originalRuntime;
       this.vm = getVM(runtime);
 
-      function hatRuntime() {
-        runtime.startHats("deltascript_whenCodetrue");
-        runtime.startHats("deltascript_whenFuncCalled");
-      }
-
       this.blockIconURI = icon;
 
-      originalRuntime.on("BEFORE_EXECUTE", () => {
-        hatRuntime();
-      });
-
-      if (!Scratch.vm?.runtime) {
-      originalRuntime.on("PROJECT_LOADED", () => {
-        setInterval(() => {
-          hatRuntime();
-        });
-      });
-      }
     }
   
   updateDTLSfuncBroadcast(func, ...args) {
@@ -205,7 +189,6 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
             text: "when [CODE] returns true",
             isEdgeActivated: false,
             hideFromPalette: !Scratch.vm?.runtime,
-            shouldRestartExistingThreads: true,
             arguments: {
               CODE: {
                 type: Scratch.ArgumentType.STRING,
@@ -224,7 +207,6 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
             text: "when function [FUNC] is called",
             isEdgeActivated: false,
             hideFromPalette: !Scratch.vm?.runtime,
-            shouldRestartExistingThreads: true,
             arguments: {
               FUNC: {
                 type: Scratch.ArgumentType.STRING,
@@ -296,7 +278,6 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
     }
     whenFuncCalled(args, util){
       if (window.isDTLSfuncBroadastExecute === true && window.DTLSfuncBroadcast.func === args.FUNC) {
-        window.isDTLSfuncBroadastExecute = false;
         return true;
       } else {
         return false;
@@ -353,6 +334,11 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
 
   if (Scratch.vm?.runtime) {
     // For Turbowarp
+    Scratch.vm?.runtime.on("BEFORE_EXECUTE", () => {
+      Scratch.vm?.runtime.startHats("deltascript_whenCodetrue");
+      Scratch.vm?.runtime.startHats("deltascript_whenFuncCalled");
+      window.isDTLSfuncBroadastExecute = false;
+    });
 
       Scratch.extensions.register(new DeltaScriptExt(Scratch.vm.runtime));
   } else {
