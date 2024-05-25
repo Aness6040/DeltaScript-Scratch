@@ -1,3 +1,4 @@
+
 function compileCode(code) {
     return code;
 }
