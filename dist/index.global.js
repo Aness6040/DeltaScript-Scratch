@@ -53,6 +53,28 @@
     updateDTLSfuncBroadcast(FUNCTION, ...argsArray);
   }
   (function(Scratch2) {
+    if (Scratch2.vm?.runtime) {
+      Scratch2.BlockShape = Scratch2.BlockShape ?? { HEXAGON: 1, ROUND: 2, SQUARE: 3 };
+      Scratch2.BlockType.INLINE = "inline";
+      const _cbfsb = Scratch2.vm.runtime._convertBlockForScratchBlocks;
+      Scratch2.vm.runtime._convertBlockForScratchBlocks = function(blockInfo, categoryInfo) {
+        if (blockInfo.blockType === Scratch2.BlockType.INLINE) {
+          blockInfo.blockType = Scratch2.BlockType.BOOLEAN;
+          blockInfo.branchCount = blockInfo.branchCount ?? 1;
+          blockInfo.outputShape = Scratch2.BlockShape.SQUARE;
+          blockInfo.disableMonitor = true;
+          blockInfo.output = [null];
+          if (!Array.isArray(blockInfo.text))
+            blockInfo.text = [blockInfo.text];
+        }
+        const res = _cbfsb.call(this, blockInfo, categoryInfo);
+        if (blockInfo.outputShape)
+          res.json.outputShape = blockInfo.outputShape;
+        if (blockInfo.output)
+          res.json.output = blockInfo.output;
+        return res;
+      };
+    }
     const DTLSfuncBroadastReset = {
       func: null,
       args: {}
@@ -104,26 +126,8 @@
         this.vm = getVM(runtime);
         this.blockIconURI = icon;
       }
-      updateDTLSfuncBroadcast(func, ...args) {
-        window.DTLSfuncBroadcast.func = func;
-        window.DTLSfuncBroadcast.args = {};
-        args.forEach((arg, index) => {
-          window.DTLSfuncBroadcast.args[`args${index + 1}`] = arg;
-        });
-        console.log("Updated DTLSfuncBroadcast:", window.DTLSfuncBroadcast);
-      }
-      preupdateDTLSfuncBroadcast(func, ARGS) {
-        const argsArray = ARGS.split(",").map((arg) => {
-          try {
-            return JSON.parse(arg);
-          } catch (e) {
-            return arg.trim();
-          }
-        });
-        updateDTLSfuncBroadcast(func, ...argsArray);
-      }
       getInfo() {
-        return {
+        const info = {
           id: "deltascript",
           name: "DeltaScript",
           color1: "#67a05a",
@@ -134,13 +138,13 @@
               blockType: Scratch2.BlockType.BUTTON,
               func: "docURL",
               text: "\u{1F4D6} Read Documentation",
-              hideFromPalette: !Scratch2.vm?.runtime
+              hideFromPalette: !Scratch2.vm?.runtime || window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")
             },
             {
               blockType: Scratch2.BlockType.BUTTON,
               func: "aboutDLTS",
               text: "\u{1F4D9} About",
-              hideFromPalette: !Scratch2.vm?.runtime
+              hideFromPalette: !Scratch2.vm?.runtime || window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")
             },
             "---",
             {
@@ -187,7 +191,7 @@
               opcode: "whenCodetrue",
               text: "when [CODE] returns true",
               isEdgeActivated: false,
-              hideFromPalette: !Scratch2.vm?.runtime,
+              hideFromPalette: window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : !Scratch2.vm?.runtime ? true : false,
               arguments: {
                 CODE: {
                   type: Scratch2.ArgumentType.STRING,
@@ -204,8 +208,8 @@
               blockType: Scratch2.BlockType.HAT,
               opcode: "whenFuncCalled",
               text: "when function [FUNC] is called",
-              isEdgeActivated: false,
-              hideFromPalette: !Scratch2.vm?.runtime,
+              isEdgeActivated: true,
+              hideFromPalette: window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : !Scratch2.vm?.runtime ? true : false,
               arguments: {
                 FUNC: {
                   type: Scratch2.ArgumentType.STRING,
@@ -239,21 +243,27 @@
                 }
               }
             },
-            {
-              blockType: Scratch2.BlockType.REPORTER,
-              opcode: "funcArg",
-              text: "get argument [NUMBER] value [TYPE]",
-              arguments: {
-                NUMBER: {
-                  type: Scratch2.ArgumentType.NUMBER,
-                  defaultValue: "1"
-                },
-                TYPE: {
-                  type: Scratch2.ArgumentType.STRING,
-                  menu: "REPORTER_TYPE"
+            function() {
+              const block = {
+                opcode: "funcArg",
+                text: "get argument [NUMBER] value [TYPE]",
+                blockType: Scratch2.vm?.runtime ? Scratch2.BlockType.BOOLEAN : Scratch2.BlockType.REPORTER,
+                arguments: {
+                  NUMBER: {
+                    type: Scratch2.ArgumentType.NUMBER,
+                    defaultValue: "1"
+                  },
+                  TYPE: {
+                    type: Scratch2.ArgumentType.STRING,
+                    menu: "REPORTER_TYPE"
+                  }
                 }
+              };
+              if (Scratch2.vm?.runtime) {
+                block.outputShape = Scratch2.BlockShape.SQUARE;
               }
-            }
+              return block;
+            }()
           ],
           menus: {
             REPORTER_TYPE: {
@@ -261,6 +271,12 @@
             }
           }
         };
+        if (window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")) {
+          info.docsURI = "https://github.com/Aness6040/DeltaScript-Scratch/wiki";
+        } else if (!Scratch2.vm?.runtime) {
+          info.docsURI = "https://github.com/Aness6040/DeltaScript-Scratch/wiki";
+        }
+        return info;
       }
       docURL() {
         window.open("https://github.com/Aness6040/DeltaScript-Scratch/wiki", "_blank");
@@ -274,12 +290,13 @@
       runBoolean(args) {
         return Cast.toBoolean(compile(args.CODE));
       }
-      whenFuncCalled(args, util) {
-        if (window.isDTLSfuncBroadastExecute === true && window.DTLSfuncBroadcast.func === args.FUNC) {
-          return true;
+      whenFuncCalled({ FUNC }) {
+        if (window.isDTLSfuncBroadastExecute === true && window.DTLSfuncBroadcast.func === FUNC) {
+          window.DTLSfuncHatMSG = true;
         } else {
-          return false;
+          window.DTLSfuncHatMSG = false;
         }
+        return window.DTLSfuncHatMSG;
       }
       lastFuncWasCalled(args, util) {
         if (window.DTLSfuncBroadcast.func === args.FUNC) {
@@ -288,9 +305,34 @@
           return false;
         }
       }
-      callFunc({ FUNC, ARGS }) {
+      async callFunc({ FUNC, ARGS }) {
+        if (!(window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : !Scratch2.vm?.runtime ? true : false)) {
+          await new Promise((resolve) => {
+            let x = setInterval(() => {
+              if (window.DTLSfuncHatMSG === false) {
+                clearInterval(x);
+                resolve();
+              }
+            }, 50);
+          });
+        }
         window.isDTLSfuncBroadastExecute = true;
         preupdateDTLSfuncBroadcast(FUNC, ARGS);
+        Scratch2.vm?.runtime.startHats("deltascript_whenFuncCalled");
+        console.log("funcHatReturn: " + window.DTLSfuncHatMSG);
+        if (!(window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : !Scratch2.vm?.runtime ? true : false)) {
+          await new Promise((resolve) => {
+            let x = setInterval(() => {
+              if (window.DTLSfuncHatMSG === true) {
+                clearInterval(x);
+                resolve();
+              }
+            }, 50);
+          });
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        window.isDTLSfuncBroadastExecute = false;
       }
       funcArg(args, util) {
         if (window.DTLSfuncBroadcast && window.DTLSfuncBroadcast.args) {
@@ -318,14 +360,7 @@
         }
       }
     }
-    if (Scratch2.vm?.runtime) {
-      Scratch2.vm?.runtime.on("BEFORE_EXECUTE", () => {
-        Scratch2.vm?.runtime.startHats("deltascript_whenCodetrue");
-        Scratch2.vm?.runtime.startHats("deltascript_whenFuncCalled");
-        window.isDTLSfuncBroadastExecute = false;
-      });
-      Scratch2.extensions.register(new DeltaScriptExt(Scratch2.vm.runtime));
-    } else {
+    function GandiRegister() {
       window.tempExt = {
         Extension: DeltaScriptExt,
         info: {
@@ -338,7 +373,7 @@
           disabled: false,
           collaboratorList: [
             {
-              collaborator: "Aness6040",
+              collaborator: "Aness6040@ElectraMod",
               collaboratorURL: "https://github.com/Aness6040"
             }
           ]
@@ -350,6 +385,16 @@
           }
         }
       };
+    }
+    if (window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")) {
+      GandiRegister();
+    } else if (!Scratch2.vm?.runtime) {
+      GandiRegister();
+    } else {
+      Scratch2.vm?.runtime.on("BEFORE_EXECUTE", () => {
+        Scratch2.vm?.runtime.startHats("deltascript_whenCodetrue");
+      });
+      Scratch2.extensions.register(new DeltaScriptExt(Scratch2.vm.runtime));
     }
   })(Scratch);
 })();

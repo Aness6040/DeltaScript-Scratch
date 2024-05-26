@@ -30,6 +30,42 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
 
 (function (Scratch) {
 
+  if(Scratch.vm?.runtime){
+          // Make some fake types like BlockShape and INLINE
+          Scratch.BlockShape = Scratch.BlockShape ?? {HEXAGON: 1, ROUND: 2, SQUARE: 3};
+          Scratch.BlockType.INLINE = 'inline';
+          // We need to patch this function to allow for the INLINE blocktype to work, same with the BlockShape patch
+          const _cbfsb = Scratch.vm.runtime._convertBlockForScratchBlocks;
+          // this is passed the extension block that we are converting and the currently in conversion category
+          Scratch.vm.runtime._convertBlockForScratchBlocks = function(blockInfo, categoryInfo) {
+            // We need to check if the block type is the new INLINE one cause the compiler will throw an error if we dont write a patch for this
+            if (blockInfo.blockType === Scratch.BlockType.INLINE) {
+              // First we need to make it a boolean so well it can go in all inputs
+              // it also stops the compiler from throwing errors
+              blockInfo.blockType = Scratch.BlockType.BOOLEAN;
+              // Now we make sure it has some branches
+              blockInfo.branchCount = blockInfo.branchCount ?? 1;
+              // Set the shape to the new square shape using the new "outputShape" option we add later
+              blockInfo.outputShape = Scratch.BlockShape.SQUARE;
+              // disable the monitor cause this does return a value :/
+              blockInfo.disableMonitor = true;
+              // and just to be sure make it work everywhere
+              blockInfo.output = [null];
+              // then convert the text to an array if its not already an array
+              if (!Array.isArray(blockInfo.text)) blockInfo.text = [blockInfo.text];
+            }
+            // now we call the original function we patched (the one we are writing for)
+            // and call it within the runtime's scope and pass the blocks info and categoryInfo
+            const res = _cbfsb.call(this, blockInfo, categoryInfo);
+            // Now we check if outputShape is on the blockInfo and copy it to the res.json
+            // same with output
+            if (blockInfo.outputShape) res.json.outputShape = blockInfo.outputShape;
+            if (blockInfo.output) res.json.output = blockInfo.output;
+            // then we return the value
+            return res;
+          };
+  }
+
     /*
     Example: 
     window.DTLSfuncBroadast = {"func": "function", "args1": 30, "args2": "sus"};
@@ -92,39 +128,10 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
       this.blockIconURI = icon;
 
     }
-  
-  updateDTLSfuncBroadcast(func, ...args) {
-      window.DTLSfuncBroadcast.func = func;
-      
-      // Réinitialiser l'objet args
-      window.DTLSfuncBroadcast.args = {};
-    
-      // Ajouter les arguments au nouvel objet args avec des clés dynamiques
-      args.forEach((arg, index) => {
-        window.DTLSfuncBroadcast.args[`args${index + 1}`] = arg;
-      });
-    
-      console.log("Updated DTLSfuncBroadcast:", window.DTLSfuncBroadcast);
-    }
 
-    preupdateDTLSfuncBroadcast(func, ARGS) {
-      // Diviser ARGS en arguments individuels
-      const argsArray = ARGS.split(',').map(arg => {
-        // Tenter de parser chaque argument en JSON
-        try {
-          return JSON.parse(arg);
-        } catch (e) {
-          // Si échec, retourner la chaîne brute
-          return arg.trim();
-        }
-      });
-  
-      // Appel de la fonction updateDTLSfuncBroadcast avec les arguments
-      updateDTLSfuncBroadcast(func, ...argsArray);
-    }
 
     getInfo() {
-      return {
+      const info = {
         id: "deltascript",
         name: "DeltaScript",
         color1: "#67a05a",
@@ -135,15 +142,15 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
             blockType: Scratch.BlockType.BUTTON,
             func: "docURL",
             text: "📖 Read Documentation",
-            hideFromPalette: !Scratch.vm?.runtime,
+            hideFromPalette: !Scratch.vm?.runtime || window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")
           },
           {
             blockType: Scratch.BlockType.BUTTON,
             func: "aboutDLTS",
-            text: '📙 About',
-            hideFromPalette: !Scratch.vm?.runtime,
+            text: "📙 About",
+            hideFromPalette: !Scratch.vm?.runtime || window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")
           },
-          '---',
+          "---",
           {
             blockType: Scratch.BlockType.LABEL,
             text: "📐 Evaluating"
@@ -155,7 +162,7 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
             arguments: {
               CODE: {
                 type: Scratch.ArgumentType.STRING,
-                defaultValue: "console.log(\"sus\")"
+                defaultValue: 'console.log("sus")'
               }
             }
           },
@@ -188,7 +195,7 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
             opcode: "whenCodetrue",
             text: "when [CODE] returns true",
             isEdgeActivated: false,
-            hideFromPalette: !Scratch.vm?.runtime,
+            hideFromPalette: window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : (!Scratch.vm?.runtime ? true : false),
             arguments: {
               CODE: {
                 type: Scratch.ArgumentType.STRING,
@@ -196,7 +203,7 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
               }
             }
           },
-          '---',
+          "---",
           {
             blockType: Scratch.BlockType.LABEL,
             text: "🔧 Functions"
@@ -205,8 +212,8 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
             blockType: Scratch.BlockType.HAT,
             opcode: "whenFuncCalled",
             text: "when function [FUNC] is called",
-            isEdgeActivated: false,
-            hideFromPalette: !Scratch.vm?.runtime,
+            isEdgeActivated: true,
+            hideFromPalette: window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : (!Scratch.vm?.runtime ? true : false),
             arguments: {
               FUNC: {
                 type: Scratch.ArgumentType.STRING,
@@ -236,33 +243,49 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
               },
               ARGS: {
                 type: Scratch.ArgumentType.STRING,
-                defaultValue: "0, \"string\", true, [], {}"
+                defaultValue: '0, "string", true, [], {}'
               }
             }
           },
-          {
-            blockType: Scratch.BlockType.REPORTER,
-            opcode: "funcArg",
-            text: "get argument [NUMBER] value [TYPE]",
-            arguments: {
-              NUMBER: {
-                type: Scratch.ArgumentType.NUMBER,
-                defaultValue: "1"
-              },
-              TYPE: {
-                type: Scratch.ArgumentType.STRING,
-                menu: 'REPORTER_TYPE',
-              },
+          function() {
+            const block = {
+              opcode: "funcArg",
+              text: "get argument [NUMBER] value [TYPE]",
+              blockType: Scratch.vm?.runtime ? Scratch.BlockType.BOOLEAN : Scratch.BlockType.REPORTER,
+              arguments: {
+                NUMBER: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: "1"
+                },
+                TYPE: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: "REPORTER_TYPE"
+                }
+              }
+            };
+            if (Scratch.vm?.runtime) {
+              block.outputShape = Scratch.BlockShape.SQUARE;
             }
-          }
+            return block;
+          }()
         ],
         menus: {
           REPORTER_TYPE: {
-            items: ['(Normal)', '(Stringify)']
+            items: ["(Normal)", "(Stringify)"]
           }
         }
       };
+    
+      if (window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")) {
+        info.docsURI = 'https://github.com/Aness6040/DeltaScript-Scratch/wiki';
+      } else if (!Scratch.vm?.runtime) {
+        info.docsURI = 'https://github.com/Aness6040/DeltaScript-Scratch/wiki';
+      }
+    
+      return info;
     }
+    
+    
 
     docURL(){
       window.open('https://github.com/Aness6040/DeltaScript-Scratch/wiki', '_blank');
@@ -276,24 +299,49 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
     runBoolean(args) {
       return Cast.toBoolean(compile(args.CODE));
     }
-    whenFuncCalled(args, util){
-      if (window.isDTLSfuncBroadastExecute === true && window.DTLSfuncBroadcast.func === args.FUNC) {
-        return true;
+    whenFuncCalled({ FUNC }) {
+      if (window.isDTLSfuncBroadastExecute === true && window.DTLSfuncBroadcast.func === FUNC) {
+        window.DTLSfuncHatMSG = true;
       } else {
-        return false;
+        window.DTLSfuncHatMSG = false;
       }
+      return window.DTLSfuncHatMSG;
     }
-    lastFuncWasCalled(args, util){
+    lastFuncWasCalled(args, util) {
       if (window.DTLSfuncBroadcast.func === args.FUNC) {
         return true;
       } else {
         return false;
       }
     }
-    callFunc({ FUNC, ARGS }) {
-      // Appel de preupdateDTLSfuncBroadcast avec les arguments
+    async callFunc({ FUNC, ARGS }) {
+      if (!(window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : !Scratch.vm?.runtime ? true : false)) {
+      await new Promise((resolve) => {
+        let x = setInterval(() => {
+          if (window.DTLSfuncHatMSG === false) {
+            clearInterval(x);
+            resolve();
+          }
+        }, 50);
+      });
+    }
       window.isDTLSfuncBroadastExecute = true;
       preupdateDTLSfuncBroadcast(FUNC, ARGS);
+      Scratch.vm?.runtime.startHats("deltascript_whenFuncCalled");
+      console.log("funcHatReturn: " + window.DTLSfuncHatMSG);
+      if (!(window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : !Scratch.vm?.runtime ? true : false)) {
+      await new Promise((resolve) => {
+        let x = setInterval(() => {
+          if (window.DTLSfuncHatMSG === true) {
+            clearInterval(x);
+            resolve();
+          }
+        }, 50);
+      });
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+      window.isDTLSfuncBroadastExecute = false;
     }
 
     funcArg(args, util) {
@@ -332,40 +380,45 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
 
   // The following snippet ensures compatibility with Turbowarp / Gandi IDE. If you want to write Turbowarp-only or Gandi-IDE code, please remove corresponding code
 
-  if (Scratch.vm?.runtime) {
-    // For Turbowarp
-    Scratch.vm?.runtime.on("BEFORE_EXECUTE", () => {
-      Scratch.vm?.runtime.startHats("deltascript_whenCodetrue");
-      Scratch.vm?.runtime.startHats("deltascript_whenFuncCalled");
-      window.isDTLSfuncBroadastExecute = false;
-    });
+  function GandiRegister () {
 
-      Scratch.extensions.register(new DeltaScriptExt(Scratch.vm.runtime));
-  } else {
-    // For Gandi
     window.tempExt = {
       Extension: DeltaScriptExt,
       info: {
-        extensionId: 'deltascript',
-        name: 'deltascript.name',
-        description: 'deltascript.description',
+        extensionId: "deltascript",
+        name: "deltascript.name",
+        description: "deltascript.description",
         iconURL: cover,
         insetIconURL: icon,
         featured: true,
         disabled: false,
         collaboratorList: [
           {
-            collaborator: 'Aness6040',
-            collaboratorURL: 'https://github.com/Aness6040'
+            collaborator: "Aness6040@ElectraMod",
+            collaboratorURL: "https://github.com/Aness6040"
           }
         ]
       },
       l10n: {
         en: {
-          'deltascript.name': "DeltaScript",
-          'deltascript.description': 'A Text Programming Language For Scratch'
+          "deltascript.name": "DeltaScript",
+          "deltascript.description": "A Text Programming Language For Scratch"
         }
       }
     };
+  }
+
+  if (window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")) {
+    // Gandi from CCW Site
+    GandiRegister();
+  } else if (!Scratch.vm?.runtime) {
+    // Gandi from Cocrea
+    GandiRegister();
+  } else {
+    // TurboWarp and its mods
+    Scratch.vm?.runtime.on("BEFORE_EXECUTE", () => {
+      Scratch.vm?.runtime.startHats("deltascript_whenCodetrue");
+    });
+    Scratch.extensions.register(new DeltaScriptExt(Scratch.vm.runtime));
   }
 })(Scratch);
