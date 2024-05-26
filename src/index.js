@@ -28,12 +28,15 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
   updateDTLSfuncBroadcast(FUNCTION, ...argsArray);
 }
 
+window.isGandi = window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : (!Scratch.vm?.runtime ? true : false);
+
 (function (Scratch) {
 
   if(Scratch.vm?.runtime){
           // Make some fake types like BlockShape and INLINE
           Scratch.BlockShape = Scratch.BlockShape ?? {HEXAGON: 1, ROUND: 2, SQUARE: 3};
           Scratch.BlockType.INLINE = 'inline';
+          Scratch.BlockType.NEUTRAL = 'neutral';
           // We need to patch this function to allow for the INLINE blocktype to work, same with the BlockShape patch
           const _cbfsb = Scratch.vm.runtime._convertBlockForScratchBlocks;
           // this is passed the extension block that we are converting and the currently in conversion category
@@ -142,13 +145,13 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
             blockType: Scratch.BlockType.BUTTON,
             func: "docURL",
             text: "📖 Read Documentation",
-            hideFromPalette: !Scratch.vm?.runtime || window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")
+            hideFromPalette: window.isGandi
           },
           {
             blockType: Scratch.BlockType.BUTTON,
             func: "aboutDLTS",
             text: "📙 About",
-            hideFromPalette: !Scratch.vm?.runtime || window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")
+            hideFromPalette: window.isGandi
           },
           "---",
           {
@@ -195,7 +198,7 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
             opcode: "whenCodetrue",
             text: "when [CODE] returns true",
             isEdgeActivated: false,
-            hideFromPalette: window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : (!Scratch.vm?.runtime ? true : false),
+            hideFromPalette: window.isGandi,
             arguments: {
               CODE: {
                 type: Scratch.ArgumentType.STRING,
@@ -213,7 +216,7 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
             opcode: "whenFuncCalled",
             text: "when function [FUNC] is called",
             isEdgeActivated: true,
-            hideFromPalette: window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : (!Scratch.vm?.runtime ? true : false),
+            hideFromPalette: window.isGandi,
             arguments: {
               FUNC: {
                 type: Scratch.ArgumentType.STRING,
@@ -276,9 +279,7 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
         }
       };
     
-      if (window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site")) {
-        info.docsURI = 'https://github.com/Aness6040/DeltaScript-Scratch/wiki';
-      } else if (!Scratch.vm?.runtime) {
+      if (window.isGandi) {
         info.docsURI = 'https://github.com/Aness6040/DeltaScript-Scratch/wiki';
       }
     
@@ -315,7 +316,7 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
       }
     }
     async callFunc({ FUNC, ARGS }) {
-      if (!(window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : !Scratch.vm?.runtime ? true : false)) {
+      if (!(window.isGandi)) {
       await new Promise((resolve) => {
         let x = setInterval(() => {
           if (window.DTLSfuncHatMSG === false) {
@@ -329,7 +330,7 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
       preupdateDTLSfuncBroadcast(FUNC, ARGS);
       Scratch.vm?.runtime.startHats("deltascript_whenFuncCalled");
       console.log("funcHatReturn: " + window.DTLSfuncHatMSG);
-      if (!(window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") ? true : !Scratch.vm?.runtime ? true : false)) {
+      if (!(window.isGandi)) {
       await new Promise((resolve) => {
         let x = setInterval(() => {
           if (window.DTLSfuncHatMSG === true) {
