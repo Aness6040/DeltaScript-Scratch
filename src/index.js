@@ -36,7 +36,6 @@ window.isGandi = window.location.href.startsWith("https://www.ccw.site") || wind
           // Make some fake types like BlockShape and INLINE
           Scratch.BlockShape = Scratch.BlockShape ?? {HEXAGON: 1, ROUND: 2, SQUARE: 3};
           Scratch.BlockType.INLINE = 'inline';
-          Scratch.BlockType.NEUTRAL = 'neutral';
           // We need to patch this function to allow for the INLINE blocktype to work, same with the BlockShape patch
           const _cbfsb = Scratch.vm.runtime._convertBlockForScratchBlocks;
           // this is passed the extension block that we are converting and the currently in conversion category
