@@ -345,23 +345,15 @@ window.isGandi = window.location.hostname.endsWith("ccw.site") || window.locatio
           }
         }, 50);
       });
-      Scratch.vm?.runtime._hats['deltascript_whenFuncCalled'];
     }
       window.isDTLSfuncBroadastExecute = true;
       preupdateDTLSfuncBroadcast(FUNC, ARGS);
       Scratch.vm?.runtime.startHats("deltascript_whenFuncCalled");
       console.log("funcHatReturn: " + window.DTLSfuncHatMSG);
-      if (!(window.isGandi)) {
-      await new Promise((resolve) => {
-        let x = setInterval(() => {
-          if (window.DTLSfuncHatMSG === true) {
-            clearInterval(x);
-            resolve();
-          }
-        }, 50);
-      });
-      } else {
+      if (window.isGandi) {
         await new Promise(resolve => setTimeout(resolve, 50))
+      } else {
+        Scratch.vm?.runtime._hats['deltascript_whenFuncCalled'];
       }
       window.isDTLSfuncBroadastExecute = false;
     }

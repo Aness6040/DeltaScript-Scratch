@@ -333,23 +333,15 @@
               }
             }, 50);
           });
-          Scratch2.vm?.runtime._hats["deltascript_whenFuncCalled"];
         }
         window.isDTLSfuncBroadastExecute = true;
         preupdateDTLSfuncBroadcast(FUNC, ARGS);
         Scratch2.vm?.runtime.startHats("deltascript_whenFuncCalled");
         console.log("funcHatReturn: " + window.DTLSfuncHatMSG);
-        if (!window.isGandi) {
-          await new Promise((resolve) => {
-            let x = setInterval(() => {
-              if (window.DTLSfuncHatMSG === true) {
-                clearInterval(x);
-                resolve();
-              }
-            }, 50);
-          });
-        } else {
+        if (window.isGandi) {
           await new Promise((resolve) => setTimeout(resolve, 50));
+        } else {
+          Scratch2.vm?.runtime._hats["deltascript_whenFuncCalled"];
         }
         window.isDTLSfuncBroadastExecute = false;
       }
