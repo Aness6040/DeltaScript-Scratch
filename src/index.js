@@ -337,7 +337,6 @@ window.isGandi = window.location.hostname.endsWith("ccw.site") || window.locatio
     }
     async callFunc({ FUNC, ARGS }) {
       if (!(window.isGandi)) {
-      Scratch.vm?.runtime._hats['deltascript_whenFuncCalled'];
       await new Promise((resolve) => {
         let x = setInterval(() => {
           if (window.DTLSfuncHatMSG === false) {
@@ -346,6 +345,7 @@ window.isGandi = window.location.hostname.endsWith("ccw.site") || window.locatio
           }
         }, 50);
       });
+      Scratch.vm?.runtime._hats['deltascript_whenFuncCalled'];
     }
       window.isDTLSfuncBroadastExecute = true;
       preupdateDTLSfuncBroadcast(FUNC, ARGS);

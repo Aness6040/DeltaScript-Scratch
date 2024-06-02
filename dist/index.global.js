@@ -325,7 +325,6 @@
       }
       async callFunc({ FUNC, ARGS }) {
         if (!window.isGandi) {
-          Scratch2.vm?.runtime._hats["deltascript_whenFuncCalled"];
           await new Promise((resolve) => {
             let x = setInterval(() => {
               if (window.DTLSfuncHatMSG === false) {
@@ -334,6 +333,7 @@
               }
             }, 50);
           });
+          Scratch2.vm?.runtime._hats["deltascript_whenFuncCalled"];
         }
         window.isDTLSfuncBroadastExecute = true;
         preupdateDTLSfuncBroadcast(FUNC, ARGS);
