@@ -28,11 +28,12 @@ function preupdateDTLSfuncBroadcast(FUNCTION, ARGS) {
   updateDTLSfuncBroadcast(FUNCTION, ...argsArray);
 }
 
-window.isGandi = window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") || window.location.href.startsWith("https://cocrea.world") || window.location.href.startsWith("https://www.cocrea.world") ? true : (!Scratch.vm?.runtime ? true : false);
+window.isGandi = window.location.hostname.endsWith("ccw.site") || window.location.hostname.endsWith("cocrea.world") ? true : (!Scratch.vm?.runtime ? true : false);
 
 (function (Scratch) {
 
   if(Scratch.vm?.runtime){
+
           // Make some fake types like BlockShape and INLINE
           Scratch.BlockShape = Scratch.BlockShape ?? {HEXAGON: 1, ROUND: 2, SQUARE: 3};
           Scratch.BlockType.INLINE = 'inline';
@@ -336,6 +337,7 @@ window.isGandi = window.location.href.startsWith("https://www.ccw.site") || wind
     }
     async callFunc({ FUNC, ARGS }) {
       if (!(window.isGandi)) {
+      Scratch.vm?.runtime._hats['deltascript_whenFuncCalled'];
       await new Promise((resolve) => {
         let x = setInterval(() => {
           if (window.DTLSfuncHatMSG === false) {

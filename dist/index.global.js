@@ -52,7 +52,7 @@
     });
     updateDTLSfuncBroadcast(FUNCTION, ...argsArray);
   }
-  window.isGandi = window.location.href.startsWith("https://www.ccw.site") || window.location.href.startsWith("https://ccw.site") || window.location.href.startsWith("https://cocrea.world") || window.location.href.startsWith("https://www.cocrea.world") ? true : !Scratch.vm?.runtime ? true : false;
+  window.isGandi = window.location.hostname.endsWith("ccw.site") || window.location.hostname.endsWith("cocrea.world") ? true : !Scratch.vm?.runtime ? true : false;
   (function(Scratch2) {
     if (Scratch2.vm?.runtime) {
       Scratch2.BlockShape = Scratch2.BlockShape ?? { HEXAGON: 1, ROUND: 2, SQUARE: 3 };
@@ -325,6 +325,7 @@
       }
       async callFunc({ FUNC, ARGS }) {
         if (!window.isGandi) {
+          Scratch2.vm?.runtime._hats["deltascript_whenFuncCalled"];
           await new Promise((resolve) => {
             let x = setInterval(() => {
               if (window.DTLSfuncHatMSG === false) {
